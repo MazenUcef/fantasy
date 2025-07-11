@@ -5,7 +5,6 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import config from '../config/config';
 import RabbitMQ from '../utils/RabbitMQ';
-import { createTeamForUser } from './TeamController';
 
 
 export const unifiedAuth = async (req: Request, res: Response) => {
@@ -60,6 +59,10 @@ export const unifiedAuth = async (req: Request, res: Response) => {
             const newUser = await User.create({ email, password: hashedPassword, tokenVersion: 0 });
 
 
+            await RabbitMQ.publish('team_creation', {
+                userId: newUser._id.toString(),
+                email: newUser.email,
+            });
 
             // Add retry logic for RabbitMQ publish
             const MAX_RETRIES = 3;

@@ -107,7 +107,7 @@ const startServer = async (): Promise<void> => {
         await connectDB();
         await startTeamWorker()
         const port = process.env.PORT || 5001
-        httpserver.listen(port, () => {
+        app.listen(port, () => {
             console.log(`Server is running on port ${port}`);
         })
     } catch (error) {

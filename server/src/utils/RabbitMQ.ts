@@ -28,7 +28,6 @@ const connect = async (): Promise<Channel> => {
     }
 };
 
-// In your RabbitMQ utils
 const publish = async <T extends MessageContent>(queue: string, message: T): Promise<boolean> => {
     try {
         const ch: Channel = await connect();
@@ -46,6 +45,7 @@ const publish = async <T extends MessageContent>(queue: string, message: T): Pro
         return false;
     }
 };
+
 
 const consume = async <T extends MessageContent>(
     queue: string,
@@ -69,7 +69,7 @@ const consume = async <T extends MessageContent>(
             console.log(`[RabbitMQ] Message acknowledged from "${queue}"`);
         } catch (error: unknown) {
             console.error(`[RabbitMQ] Error processing message from "${queue}":`, error);
-            ch.nack(msg, false, false);
+            ch.nack(msg, false, false); // discard
             console.warn(`[RabbitMQ] Message discarded from "${queue}"`);
         }
     });

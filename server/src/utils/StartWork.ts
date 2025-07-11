@@ -3,7 +3,7 @@ import { createTeamForUser } from "../controllers/TeamController";
 import RabbitMQ from "./RabbitMQ";
 
 
-// In StartWork.ts
+
 const startTeamWorker = async () => {
     let retryCount = 0;
     const MAX_RETRIES = 5;
@@ -18,8 +18,7 @@ const startTeamWorker = async () => {
                         await createTeamForUser(msg.userId);
                     } catch (error) {
                         console.error(`Failed to create team for ${msg.email}:`, error);
-                        // Implement dead letter queue or retry logic here
-                        throw error; // This will trigger nack
+                        throw error;
                     }
                 }
             );
