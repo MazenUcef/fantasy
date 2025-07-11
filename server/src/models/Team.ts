@@ -3,10 +3,7 @@ import mongoose from 'mongoose';
 const teamSchema = new mongoose.Schema({
     name: {
         type: String,
-        required: true,
-        trim: true,
-        minlength: 3,
-        maxlength: 30
+        default: "My Team"
     },
     owner: {
         type: mongoose.Schema.Types.ObjectId,

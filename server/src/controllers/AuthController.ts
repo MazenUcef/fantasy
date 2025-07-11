@@ -9,12 +9,7 @@ import RabbitMQ from '../utils/RabbitMQ';
 
 export const unifiedAuth = async (req: Request, res: Response) => {
     try {
-        const { email, password, teamName } = req.body;
-
-        if (teamName.length < 3 || teamName.length > 30) {
-            return res.status(400).json({ message: 'Team name must be between 3-30 characters' });
-        }
-
+        const { email, password } = req.body;
 
         const existingUser = await User.findOne({ email }).select('+password');
 
@@ -67,7 +62,6 @@ export const unifiedAuth = async (req: Request, res: Response) => {
             await RabbitMQ.publish('team_creation', {
                 userId: newUser._id.toString(),
                 email: newUser.email,
-                teamName: teamName.trim()
             });
 
 

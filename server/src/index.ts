@@ -10,6 +10,7 @@ import job from './config/cron';
 import { limiter } from './config/ratelimit';
 import authRoutes from './routes/AuthRoutes'
 import transferRoutes from './routes/TranserRoutes'
+import teamRoutes from './routes/TeamRoutes'
 import startTeamWorker from './utils/StartWork';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
@@ -121,6 +122,7 @@ app.use((err: CustomError, req: Request, res: Response, next: NextFunction) => {
 
 app.use('/api/auth', authRoutes);
 app.use('/api/transfer', transferRoutes);
+app.use('/api/team', teamRoutes);
 
 // Start server only after DB connection
 const startServer = async (): Promise<void> => {

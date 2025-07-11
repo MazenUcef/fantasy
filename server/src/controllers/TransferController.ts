@@ -8,19 +8,46 @@ import { Notification } from "../models/Notification";
 
 interface ITeam {
     _id: mongoose.Types.ObjectId;
+    name: string;
     players: mongoose.Types.ObjectId[];
     budget: number;
-    save(options?: any): Promise<any>;
+    save(options?: mongoose.SaveOptions): Promise<ITeam>;
+}
+
+interface IPlayer {
+    _id: mongoose.Types.ObjectId;
+    name: string;
+    position: string;
+    team: mongoose.Types.ObjectId | ITeam;
+    isOnTransferList: boolean;
+    transferPrice?: number;
+}
+
+interface PlayerQuery {
+    isOnTransferList: boolean;
+    position?: string;
+    name?: { $regex: string; $options: string };
+    transferPrice?: {
+        $gte?: number;
+        $lte?: number;
+    };
+    team?: { $in: mongoose.Types.ObjectId[] };
 }
 
 export const getTransferList = async (req: Request, res: Response) => {
     try {
-        const { position, minPrice, maxPrice, search, teamName } = req.query;
+        const { position, minPrice, maxPrice, search, teamName } = req.query as {
+            position?: string;
+            minPrice?: string;
+            maxPrice?: string;
+            search?: string;
+            teamName?: string;
+        };
 
-        const query: any = { isOnTransferList: true };
+        const query: PlayerQuery = { isOnTransferList: true };
 
         if (position) query.position = position;
-        if (search) query.name = { $regex: search, $options: "i" }
+        if (search) query.name = { $regex: search, $options: "i" };
 
         if (minPrice || maxPrice) {
             query.transferPrice = {};
@@ -31,21 +58,24 @@ export const getTransferList = async (req: Request, res: Response) => {
         if (teamName) {
             const teams = await Team.find({
                 name: { $regex: teamName, $options: 'i' }
-            }).select('_id');
+            }).select('_id').exec();
+
             query.team = { $in: teams.map(t => t._id) };
         }
 
         const players = await Player.find(query)
-            .populate({
+            .populate<{ team: ITeam }>({
                 path: "team",
                 select: "name"
             })
-            .sort({ transferPrice: 1 });
+            .sort({ transferPrice: 1 })
+            .exec();
 
         res.json(players);
-    } catch (error) {
+    } catch (error: unknown) {
         console.error('Transfer list error:', error);
-        res.status(500).json({ message: 'Failed to get transfer list' });
+        const errorMessage = error instanceof Error ? error.message : 'Failed to get transfer list';
+        res.status(500).json({ message: errorMessage });
     }
 };
 
@@ -91,10 +121,14 @@ export const listPlayer = async (req: Request, res: Response) => {
                 price: player.transferPrice
             }
         });
-    } catch (error: any) {
+    } catch (error: unknown) {
         await session.abortTransaction();
-        console.error('List player error:', error);
-        res.status(400).json({ message: error.message });
+        console.error('list player error:', error);
+        let errorMessage = 'An unknown error occurred while listing player';
+        if (error instanceof Error) {
+            errorMessage = error.message;
+        }
+        res.status(400).json({ message: errorMessage });
     } finally {
         session.endSession();
     }
@@ -131,10 +165,14 @@ export const unlistPlayer = async (req: Request, res: Response) => {
                 name: player.name
             }
         });
-    } catch (error: any) {
+    } catch (error: unknown) {
         await session.abortTransaction();
         console.error('Unlist player error:', error);
-        res.status(400).json({ message: error.message });
+        let errorMessage = 'An unknown error occurred while unlist player';
+        if (error instanceof Error) {
+            errorMessage = error.message;
+        }
+        res.status(400).json({ message: errorMessage });
     } finally {
         session.endSession();
     }
@@ -247,10 +285,14 @@ export const buyPlayer = async (req: Request, res: Response) => {
             sellerBudget: sellerTeam.budget
         });
 
-    } catch (error: any) {
+    } catch (error: unknown) {
         await session.abortTransaction();
         console.error('Buy player error:', error);
-        res.status(400).json({ message: error.message });
+        let errorMessage = 'An unknown error occurred while Buying Player';
+        if (error instanceof Error) {
+            errorMessage = error.message;
+        }
+        res.status(400).json({ message: errorMessage });
     } finally {
         session.endSession();
     }
@@ -294,11 +336,73 @@ export const updateAskingPrice = async (req: Request, res: Response) => {
                 newPrice: player.transferPrice
             }
         });
-    } catch (error: any) {
+    } catch (error: unknown) {
         await session.abortTransaction();
-        console.error('Update price error:', error);
-        res.status(400).json({ message: error.message });
+        console.error('error while update asking price:', error);
+        let errorMessage = 'An unknown error occurred';
+        if (error instanceof Error) {
+            errorMessage = error.message;
+        }
+        res.status(400).json({ message: errorMessage });
     } finally {
         session.endSession();
+    }
+};
+
+
+export const getMyTeamPlayers = async (req: Request, res: Response) => {
+    try {
+        const userId = req.user?.userId;
+        
+        // Find the user's team and populate the players
+        const team = await Team.findOne({ owner: userId })
+            .populate<{ players: IPlayer[] }>('players')
+            .exec();
+
+        if (!team) {
+            return res.status(404).json({ message: 'Team not found' });
+        }
+
+        res.json({
+            teamId: team._id,
+            teamName: team.name,
+            budget: team.budget,
+            players: team.players.map(player => ({
+                id: player._id,
+                name: player.name,
+                position: player.position,
+                isOnTransferList: player.isOnTransferList,
+                transferPrice: player.transferPrice
+            }))
+        });
+    } catch (error: unknown) {
+        console.error('Get team players error:', error);
+        const errorMessage = error instanceof Error ? error.message : 'Failed to get team players';
+        res.status(500).json({ message: errorMessage });
+    }
+};
+
+export const getMyTeamPlayersForSale = async (req: Request, res: Response) => {
+    try {
+        const userId = req.user?.userId;
+        
+        // Find the user's team and get only players listed for transfer
+        const players = await Player.find({
+            team: await Team.findOne({ owner: userId }).select('_id').exec(),
+            isOnTransferList: true
+        }).exec();
+
+        res.json({
+            players: players.map(player => ({
+                id: player._id,
+                name: player.name,
+                position: player.position,
+                transferPrice: player.transferPrice
+            }))
+        });
+    } catch (error: unknown) {
+        console.error('Get team players for sale error:', error);
+        const errorMessage = error instanceof Error ? error.message : 'Failed to get players for sale';
+        res.status(500).json({ message: errorMessage });
     }
 };

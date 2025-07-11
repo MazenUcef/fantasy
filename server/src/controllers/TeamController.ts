@@ -3,50 +3,79 @@ import { Player } from '../models/Player';
 import { User } from '../models/User';
 import mongoose from 'mongoose';
 import { PLAYERS_DATA } from '../constants/players';
+import { Request, Response } from 'express';
 
 
-export const createTeamForUser = async (userId: string, teamName: string) => {
+
+
+export const updateTeamName = async (req: Request, res: Response) => {
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
+    try {
+        const { teamName } = req.body;
+        const userId = req.user?.userId;
+
+        // Validate input
+        if (!teamName || teamName.trim().length < 3 || teamName.trim().length > 30) {
+            return res.status(400).json({
+                message: 'Team name must be between 3-30 characters'
+            });
+        }
+
+        // Get user's team
+        const user = await User.findById(userId).populate('team').session(session);
+        if (!user || !user.team) {
+            return res.status(404).json({ message: 'Team not found' });
+        }
+
+        // Check if new name is already taken (case-insensitive)
+        const teamExists = await Team.findOne({
+            name: { $regex: new RegExp(`^${teamName.trim()}$`, 'i') },
+            _id: { $ne: user.team._id } // Exclude current team
+        }).session(session);
+
+        if (teamExists) {
+            return res.status(400).json({ message: 'Team name is already taken' });
+        }
+
+        // Update team name
+        const updatedTeam = await Team.findByIdAndUpdate(
+            user.team._id,
+            { name: teamName.trim() },
+            { new: true, session }
+        );
+
+        await session.commitTransaction();
+
+        res.json({
+            message: 'Team name updated successfully',
+            team: {
+                id: updatedTeam?._id,
+                name: updatedTeam?.name
+            }
+        });
+    } catch (error) {
+        await session.abortTransaction();
+        console.error('Update team name error:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    } finally {
+        session.endSession();
+    }
+};
+
+
+export const createTeamForUser = async (userId: string) => {
     const session = await mongoose.startSession();
     session.startTransaction();
 
     try {
 
         const team = await Team.create([{
-            name: teamName,
             owner: userId,
             budget: 5_000_000
         }], { session });
 
-
-        // const players = await Player.create(
-        //     [
-        //         ...Array(3).fill(null).map((_, i) => ({
-        //             name: `Goalkeeper ${i + 1}`,
-        //             position: 'goalkeeper',
-        //             price: calculatePlayerPrice('goalkeeper'),
-        //             team: team[0]._id
-        //         })),
-        //         ...Array(6).fill(null).map((_, i) => ({
-        //             name: `Defender ${i + 1}`,
-        //             position: 'defender',
-        //             price: calculatePlayerPrice('defender'),
-        //             team: team[0]._id
-        //         })),
-        //         ...Array(6).fill(null).map((_, i) => ({
-        //             name: `Midfielder ${i + 1}`,
-        //             position: 'midfielder',
-        //             price: calculatePlayerPrice('midfielder'),
-        //             team: team[0]._id
-        //         })),
-        //         ...Array(5).fill(null).map((_, i) => ({
-        //             name: `Attacker ${i + 1}`,
-        //             position: 'attacker',
-        //             price: calculatePlayerPrice('attacker'),
-        //             team: team[0]._id
-        //         }))
-        //     ],
-        //     { session, ordered: true }
-        // );
         const players = await Player.create(
             [
                 ...getPlayersByPosition('goalkeeper', 3, team[0]._id),
@@ -108,3 +137,5 @@ function getPlayersByPosition(position: string, count: number, teamId: mongoose.
         age: Math.floor(Math.random() * 10) + 18
     }));
 }
+
+
