@@ -1,10 +1,8 @@
 import express, { Request, Response, Application, NextFunction } from 'express';
 import "dotenv/config";
 import cookieParser from 'cookie-parser';
-import helmet from 'helmet';
 import morgan from 'morgan';
 import cors from 'cors';
-import { v2 as cloudinary } from 'cloudinary';
 import connectDB from './config/database';
 import job from './config/cron';
 import { limiter } from './config/ratelimit';
@@ -16,7 +14,7 @@ import { createServer } from 'http';
 import { Server } from 'socket.io';
 
 const app: Application = express();
-const httpserver = createServer(app);
+// const httpserver = createServer(app);
 
 
 if (!process.env.MONGO_URL) {
@@ -32,27 +30,27 @@ const allowedOrigins = [
     'http://localhost:5000',
 ].filter(Boolean);
 
-// Socket.IO connection handler
-const io = new Server(httpserver, {
-    cors: {
-        origin: allowedOrigins,
-        methods: ["GET", "POST"]
-    }
-})
+// // Socket.IO connection handler
+// const io = new Server(httpserver, {
+//     cors: {
+//         origin: allowedOrigins,
+//         methods: ["GET", "POST"]
+//     }
+// })
 
-io.on("connection", (socket) => {
-    console.log("New client connected", socket.id);
+// io.on("connection", (socket) => {
+//     console.log("New client connected", socket.id);
 
-    // join a room specific to the user's ID
-    socket.on("join-user-room", (userId) => {
-        socket.join(userId)
-        console.log(`User ${userId} joined their room`);
-    });
+//     // join a room specific to the user's ID
+//     socket.on("join-user-room", (userId) => {
+//         socket.join(userId)
+//         console.log(`User ${userId} joined their room`);
+//     });
 
-    socket.on('disconnect', () => {
-        console.log('Client disconnected:', socket.id);
-    });
-})
+//     socket.on('disconnect', () => {
+//         console.log('Client disconnected:', socket.id);
+//     });
+// })
 
 
 // Cron job
@@ -64,19 +62,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(morgan("dev"));
-app.use(
-    helmet({
-        contentSecurityPolicy: {
-            directives: {
-                defaultSrc: ["'self'"],
-                scriptSrc: ["'self'", "'unsafe-inline'"],
-                styleSrc: ["'self'", "'unsafe-inline'"],
-                imgSrc: ["'self'", 'data:', 'https://res.cloudinary.com'],
-            },
-        },
-        crossOriginEmbedderPolicy: false,
-    })
-)
+
 
 // CORS configuration
 app.use(cors({
@@ -86,11 +72,6 @@ app.use(cors({
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-cloudinary.config({
-    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-    api_key: process.env.CLOUDINARY_API_KEY,
-    api_secret: process.env.CLOUDINARY_API_SECRET,
-});
 
 // Health Check
 app.get("/health", (req: Request, res: Response) => {
@@ -130,7 +111,7 @@ const startServer = async (): Promise<void> => {
         await connectDB();
         await startTeamWorker()
         const port = process.env.PORT || 5001
-        httpserver.listen(port, () => {
+        app.listen(port, () => {
             console.log(`Server is running on port ${port}`);
         })
     } catch (error) {
@@ -142,4 +123,4 @@ const startServer = async (): Promise<void> => {
 
 startServer();
 
-export { io }
+// export { io }
