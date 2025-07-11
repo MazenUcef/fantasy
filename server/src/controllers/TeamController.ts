@@ -137,5 +137,3 @@ function getPlayersByPosition(position: string, count: number, teamId: mongoose.
         age: Math.floor(Math.random() * 10) + 18
     }));
 }
-
-

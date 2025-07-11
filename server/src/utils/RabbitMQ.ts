@@ -28,14 +28,23 @@ const connect = async (): Promise<Channel> => {
     }
 };
 
-const publish = async <T extends MessageContent>(queue: string, message: T): Promise<void> => {
-    const ch: Channel = await connect();
-    await ch.assertQueue(queue, { durable: true });
-    console.log(`[RabbitMQ] Queue "${queue}" asserted`);
-
-    const payload: string = JSON.stringify(message);
-    ch.sendToQueue(queue, Buffer.from(payload), { persistent: true });
-    console.log(`[RabbitMQ] Message published to "${queue}":`, payload);
+// In your RabbitMQ utils
+const publish = async <T extends MessageContent>(queue: string, message: T): Promise<boolean> => {
+    try {
+        const ch: Channel = await connect();
+        await ch.assertQueue(queue, { durable: true });
+        const payload: string = JSON.stringify(message);
+        const success = ch.sendToQueue(queue, Buffer.from(payload), { persistent: true });
+        if (!success) {
+            console.error(`[RabbitMQ] Failed to publish to ${queue}`);
+            return false;
+        }
+        console.log(`[RabbitMQ] Published to ${queue}`);
+        return true;
+    } catch (error) {
+        console.error(`[RabbitMQ] Publish error to ${queue}:`, error);
+        return false;
+    }
 };
 
 const consume = async <T extends MessageContent>(
@@ -60,7 +69,7 @@ const consume = async <T extends MessageContent>(
             console.log(`[RabbitMQ] Message acknowledged from "${queue}"`);
         } catch (error: unknown) {
             console.error(`[RabbitMQ] Error processing message from "${queue}":`, error);
-            ch.nack(msg, false, false); // discard
+            ch.nack(msg, false, false);
             console.warn(`[RabbitMQ] Message discarded from "${queue}"`);
         }
     });

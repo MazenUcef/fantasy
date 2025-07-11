@@ -5,6 +5,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import config from '../config/config';
 import RabbitMQ from '../utils/RabbitMQ';
+import { createTeamForUser } from './TeamController';
 
 
 export const unifiedAuth = async (req: Request, res: Response) => {
@@ -59,10 +60,41 @@ export const unifiedAuth = async (req: Request, res: Response) => {
             const newUser = await User.create({ email, password: hashedPassword, tokenVersion: 0 });
 
 
-            await RabbitMQ.publish('team_creation', {
-                userId: newUser._id.toString(),
-                email: newUser.email,
-            });
+
+            // Add retry logic for RabbitMQ publish
+            const MAX_RETRIES = 3;
+            let retries = 0;
+            let published = false;
+
+            while (retries < MAX_RETRIES && !published) {
+                try {
+                    published = await RabbitMQ.publish('team_creation', {
+                        userId: newUser._id.toString(),
+                        email: newUser.email,
+                    });
+
+                    if (!published) {
+                        retries++;
+                        await new Promise(resolve => setTimeout(resolve, 1000 * retries));
+                    }
+                } catch (error) {
+                    console.error(`RabbitMQ publish attempt ${retries + 1} failed:`, error);
+                    retries++;
+                    await new Promise(resolve => setTimeout(resolve, 1000 * retries));
+                }
+            }
+
+            // if (!published) {
+            //     console.error(`Failed to publish team creation for user ${newUser.email} after ${MAX_RETRIES} attempts`);
+            //     // Fallback to synchronous team creation
+            //     try {
+            //         await createTeamForUser(newUser._id.toString());
+            //         console.log(`Fallback team creation succeeded for ${newUser.email}`);
+            //     } catch (fallbackError) {
+            //         console.error(`Fallback team creation failed for ${newUser.email}:`, fallbackError);
+            //         // Continue anyway since user is already created
+            //     }
+            // }
 
 
             const accessToken = jwt.sign(

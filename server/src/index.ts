@@ -1,6 +1,7 @@
 import express, { Request, Response, Application, NextFunction } from 'express';
 import "dotenv/config";
 import cookieParser from 'cookie-parser';
+import helmet from 'helmet';
 import morgan from 'morgan';
 import cors from 'cors';
 import connectDB from './config/database';
@@ -14,7 +15,7 @@ import { createServer } from 'http';
 import { Server } from 'socket.io';
 
 const app: Application = express();
-// const httpserver = createServer(app);
+const httpserver = createServer(app);
 
 
 if (!process.env.MONGO_URL) {
@@ -30,27 +31,27 @@ const allowedOrigins = [
     'http://localhost:5000',
 ].filter(Boolean);
 
-// // Socket.IO connection handler
-// const io = new Server(httpserver, {
-//     cors: {
-//         origin: allowedOrigins,
-//         methods: ["GET", "POST"]
-//     }
-// })
+// Socket.IO connection handler
+const io = new Server(httpserver, {
+    cors: {
+        origin: allowedOrigins,
+        methods: ["GET", "POST"]
+    }
+})
 
-// io.on("connection", (socket) => {
-//     console.log("New client connected", socket.id);
+io.on("connection", (socket) => {
+    console.log("New client connected", socket.id);
 
-//     // join a room specific to the user's ID
-//     socket.on("join-user-room", (userId) => {
-//         socket.join(userId)
-//         console.log(`User ${userId} joined their room`);
-//     });
+    // join a room specific to the user's ID
+    socket.on("join-user-room", (userId) => {
+        socket.join(userId)
+        console.log(`User ${userId} joined their room`);
+    });
 
-//     socket.on('disconnect', () => {
-//         console.log('Client disconnected:', socket.id);
-//     });
-// })
+    socket.on('disconnect', () => {
+        console.log('Client disconnected:', socket.id);
+    });
+})
 
 
 // Cron job
@@ -62,7 +63,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(morgan("dev"));
-
+app.use(helmet());
 
 // CORS configuration
 app.use(cors({
@@ -111,7 +112,7 @@ const startServer = async (): Promise<void> => {
         await connectDB();
         await startTeamWorker()
         const port = process.env.PORT || 5001
-        app.listen(port, () => {
+        httpserver.listen(port, () => {
             console.log(`Server is running on port ${port}`);
         })
     } catch (error) {
@@ -123,4 +124,5 @@ const startServer = async (): Promise<void> => {
 
 startServer();
 
-// export { io }
+
+export { io }
