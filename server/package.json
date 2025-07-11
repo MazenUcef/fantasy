@@ -36,8 +36,7 @@
     "mongoose": "^8.13.2",
     "morgan": "^1.10.0",
     "multer": "^1.4.5-lts.2",
-    "socket.io": "^4.8.1",
-    "typescript": "^5.8.3"
+    "socket.io": "^4.8.1"
   },
   "devDependencies": {
     "@types/amqplib": "^0.10.7",
@@ -59,6 +58,7 @@
     "eslint": "^9.24.0",
     "nodemon": "^3.1.9",
     "ts-node": "^10.9.2",
-    "tsconfig-paths": "^4.2.0"
+    "tsconfig-paths": "^4.2.0",
+    "typescript": "^5.8.3"
   }
 }
