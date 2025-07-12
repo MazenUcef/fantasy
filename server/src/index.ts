@@ -66,7 +66,10 @@ app.use(morgan("dev"));
 app.use(helmet());
 
 // CORS configuration
-app.use(cors());
+app.use(cors({
+    origin: allowedOrigins[0],
+    credentials: true
+}));
 
 
 // Health Check
