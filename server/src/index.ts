@@ -70,9 +70,18 @@ app.use(cors());
 
 
 // Health Check
-app.get("/health", (req: Request, res: Response) => {
-    res.status(200).json({ message: "Server is very healthy" })
-})
+// Add a root route handler
+app.get('/', (req: Request, res: Response) => {
+    res.status(200).json({
+        message: 'Fantasy Football API',
+        status: 'running',
+        routes: {
+            auth: '/api/auth',
+            transfer: '/api/transfer',
+            team: '/api/team'
+        }
+    });
+});
 
 
 // Error handling middleware
@@ -107,7 +116,7 @@ const startServer = async (): Promise<void> => {
         await connectDB();
         await startTeamWorker()
         const port = process.env.PORT || 5000
-        app.listen(port, () => {
+        httpserver.listen(port, () => {
             console.log(`Server is running on port ${port}`);
         })
     } catch (error) {
