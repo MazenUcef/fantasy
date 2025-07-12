@@ -70,19 +70,9 @@ app.use(cors());
 
 
 // Health Check
-// Add a root route handler
-app.get('/', (req: Request, res: Response) => {
-    res.status(200).json({
-        message: 'Fantasy Football API',
-        status: 'running',
-        routes: {
-            auth: '/api/auth',
-            transfer: '/api/transfer',
-            team: '/api/team'
-        }
-    });
-});
-
+app.get("/health", (req: Request, res: Response) => {
+    res.status(200).json({ message: "Server is very healthy" })
+})
 
 // Error handling middleware
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
