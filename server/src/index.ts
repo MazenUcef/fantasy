@@ -6,17 +6,16 @@ import morgan from 'morgan';
 import cors from 'cors';
 import connectDB from './config/database';
 import job from './config/cron';
-import { limiter } from './config/ratelimit';
 import authRoutes from './routes/AuthRoutes'
 import transferRoutes from './routes/TransferRoutes'
 import teamRoutes from './routes/TeamRoutes'
 import startTeamWorker from './utils/StartWork';
 import { createServer } from 'http';
-import { Server } from 'socket.io';
+
 
 const app: Application = express();
-const httpserver = createServer(app);
 
+job.start()
 
 if (!process.env.MONGO_URL) {
     throw new Error('MONGO_URL environment variable is not defined');
@@ -26,39 +25,11 @@ if (!process.env.PORT) {
     throw new Error('PORT environment variable is not defined');
 };
 
-// const allowedOrigins = [
-//     'http://localhost:5173',
-//     'http://localhost:5000',
-// ].filter(Boolean);
-
-// Socket.IO connection handler
-const io = new Server(httpserver, {
-    cors: {
-        origin: "https://fantasy-1-77hv.onrender.com",
-        methods: ["GET", "POST"]
-    }
-})
-
-io.on("connection", (socket) => {
-    console.log("New client connected", socket.id);
-
-    // join a room specific to the user's ID
-    socket.on("join-user-room", (userId) => {
-        socket.join(userId)
-        console.log(`User ${userId} joined their room`);
-    });
-
-    socket.on('disconnect', () => {
-        console.log('Client disconnected:', socket.id);
-    });
-})
 
 
 // Cron job
-job.start()
 
 // Middlewares
-app.use(limiter);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -114,7 +85,7 @@ const startServer = async (): Promise<void> => {
         await connectDB();
         await startTeamWorker()
         const port = process.env.PORT || 5000
-        httpserver.listen(port, () => {
+        app.listen(port, () => {
             console.log(`Server is running on port ${port}`);
         })
     } catch (error) {
@@ -125,6 +96,3 @@ const startServer = async (): Promise<void> => {
 
 
 startServer();
-
-
-export { io }

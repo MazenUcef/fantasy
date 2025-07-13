@@ -1,11 +1,10 @@
-import { CronJob } from "cron";
-import { IncomingMessage } from "http";
+import { CronJob } from 'cron';  // Directly import CronJob
 import https from 'https';
-
+import { IncomingMessage } from 'http';
 
 const job = new CronJob(
-    "*/14 * * * *",
-    function () {
+    "*/14 * * * *", 
+    () => {
         https.get(process.env.API_URL as string, (res: IncomingMessage) => {
             if (res.statusCode === 200) {
                 console.log("GET request sent successfully");
@@ -13,11 +12,12 @@ const job = new CronJob(
                 console.log("GET request failed with status code:", res.statusCode);
             }
         }).on('error', (e) => {
-            console.error("Error while checking server health", e.message);
+            console.error("Error while sending request", e.message);
         });
     },
     null,
     true,
     'UTC'
 );
+
 export default job;

@@ -3,7 +3,6 @@ import { Team } from "../models/Team";
 import { Player } from "../models/Player";
 import mongoose from "mongoose";
 import { User } from "../models/User";
-import { io } from "../index";
 import { Notification } from "../models/Notification";
 
 interface ITeam {
@@ -281,16 +280,6 @@ export const buyPlayer = async (req: Request, res: Response) => {
 
         // 7. Commit transaction
         await session.commitTransaction();
-
-        // 8. Emit real-time events (outside transaction)
-        io.to(sellerUser._id.toString()).emit('player-sold', {
-            message: `Your player ${player.name} has been sold!`,
-            playerId: player._id,
-            buyerTeam: buyerTeam.name,
-            priceReceived: price,
-            newBudget: sellerTeam.budget,
-            notificationId: notification._id
-        });
 
         res.json({
             message: 'Transfer successful',
