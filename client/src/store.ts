@@ -3,6 +3,8 @@ import { combineReducers, configureStore } from '@reduxjs/toolkit';
 import { persistStore, persistReducer } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
 import authReducer, { type AuthState } from './redux/authSlice';
+import teamReducer from './redux/teamSlice';
+import transferReducer from './redux/transferSlice';
 
 
 
@@ -13,6 +15,8 @@ const persistConfig = {
 
 const rootReducer = combineReducers({
     auth: authReducer,
+    team: teamReducer,
+    transfer:transferReducer
 })
 
 
@@ -28,7 +32,11 @@ const store = configureStore({
 
 export const persistor = persistStore(store);
 
-export interface RootState extends PersistPartial { auth: AuthState }
+export interface RootState extends PersistPartial {
+    auth: AuthState;
+    team: ReturnType<typeof teamReducer>;
+    transfer: ReturnType<typeof transferReducer>;
+}
 export type AppDispatch = typeof store.dispatch;
 
 export default store;

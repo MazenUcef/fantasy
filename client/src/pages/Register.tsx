@@ -1,9 +1,9 @@
+import { useEffect, useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
-import { FaUser, FaLock, FaFutbol, FaRunning, FaShieldAlt } from 'react-icons/fa';
+import { FaUser, FaLock, FaFutbol, FaRunning, FaShieldAlt, FaCheck, FaSpinner } from 'react-icons/fa';
 import { motion } from 'framer-motion';
-import toast from 'react-hot-toast';
-import { useState } from 'react';
 import { useUnifiedAuth } from '../api/AuthApi';
+import { useNavigate } from 'react-router';
 
 type AuthFormData = {
   email: string;
@@ -18,29 +18,50 @@ const floatingBalls = [
 ];
 
 const AuthPage = () => {
-  const { control, handleSubmit, formState: { errors } } = useForm<AuthFormData>({
+  const { control, handleSubmit, formState: { errors }, reset } = useForm<AuthFormData>({
     defaultValues: {
       email: '',
       password: '',
     }
   });
-  const { Register, authStatus } = useUnifiedAuth()
+
+  const navigate = useNavigate()
+
+  const {
+    Register,
+    teamCreationStatus,
+    user
+  } = useUnifiedAuth();
+
   const [isLogin, setIsLogin] = useState(true);
 
-  const onSubmit = async (data: AuthFormData) => {
-    console.log("Form submitted with data:", data);
-    
-    try {
-      await Register(data)
-      toast.success(isLogin ? 'Welcome back!' : 'Account created successfully!');
-    } catch (error: any) {
-      toast.error(error.message || 'Authentication failed');
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+
+  useEffect(() => {
+    if (user && (isLogin || teamCreationStatus === 'completed') && user.hasTeam) {
+      navigate('/home');
     }
+  }, [user, isLogin, teamCreationStatus, navigate, user?.hasTeam]);
+
+  const onSubmit = async (data: AuthFormData) => {
+    setIsSubmitting(true);
+    try {
+      await Register(data);
+    } catch (error) {
+      setIsSubmitting(false);
+    }
+  };
+
+  const switchMode = (login: boolean) => {
+    setIsLogin(login);
+    reset();
   };
 
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 overflow-hidden">
-      {/* Floating animated football elements */}
+      {/* Floating balls animation */}
       {floatingBalls.map((ball) => (
         <motion.div
           key={ball.id}
@@ -95,13 +116,13 @@ const AuthPage = () => {
             <div className="flex border-b border-gray-700">
               <button
                 className={`flex-1 py-4 font-medium ${isLogin ? 'text-yellow-400  border-b-2 border-yellow-400' : 'text-gray-400'} cursor-pointer`}
-                onClick={() => setIsLogin(true)}
+                onClick={() => switchMode(true)}
               >
                 Sign In
               </button>
               <button
                 className={`flex-1 py-4 font-medium ${!isLogin ? 'text-green-400 border-b-2 border-green-400' : 'text-gray-400'} cursor-pointer`}
-                onClick={() => setIsLogin(false)}
+                onClick={() => switchMode(false)}
               >
                 Register
               </button>
@@ -109,6 +130,7 @@ const AuthPage = () => {
 
             {/* Form */}
             <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-6">
+              {/* Email field */}
               <motion.div
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -135,6 +157,7 @@ const AuthPage = () => {
                         type="email"
                         className="w-full pl-10 pr-3 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-white placeholder-gray-400"
                         placeholder="player@fantasyteam.com"
+                        disabled={teamCreationStatus === 'in-progress' || teamCreationStatus === 'checking'}
                       />
                     </div>
                   )}
@@ -144,6 +167,7 @@ const AuthPage = () => {
                 )}
               </motion.div>
 
+              {/* Password field */}
               <motion.div
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -170,6 +194,7 @@ const AuthPage = () => {
                         type="password"
                         className="w-full pl-10 pr-3 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-white placeholder-gray-400"
                         placeholder="••••••••"
+                        disabled={teamCreationStatus === 'in-progress' || teamCreationStatus === 'checking'}
                       />
                     </div>
                   )}
@@ -179,6 +204,7 @@ const AuthPage = () => {
                 )}
               </motion.div>
 
+              {/* Submit button */}
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -186,38 +212,44 @@ const AuthPage = () => {
               >
                 <motion.button
                   type="submit"
-                  className="w-full py-3 px-4 bg-gradient-to-r from-yellow-500 to-green-500 hover:from-yellow-600 hover:to-green-600 text-white font-bold rounded-lg flex items-center justify-center gap-2 relative overflow-hidden"
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  disabled={authStatus === "loading"}
+                  className={`w-full py-3 px-4 ${teamCreationStatus === 'in-progress' ? 'bg-blue-600' :
+                    teamCreationStatus === 'completed' ? 'bg-green-600' :
+                      'bg-gradient-to-r from-yellow-500 to-green-500'
+                    } text-white font-bold rounded-lg flex items-center justify-center gap-2`}
+                  disabled={isSubmitting}
                 >
-                  {authStatus === "loading" ? (
-                    <span className="flex items-center">
-                      <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      {isLogin ? 'Signing In...' : 'Creating Account...'}
-                    </span>
+                  {isSubmitting || teamCreationStatus === 'in-progress' ? (
+                    <>
+                      <FaSpinner className="animate-spin" />
+                      {teamCreationStatus === 'in-progress' ? (
+                        'Creating your team...'
+                      ) : isLogin ? (
+                        'Signing in...'
+                      ) : (
+                        'Creating account...'
+                      )}
+                    </>
+                  ) : teamCreationStatus === 'completed' ? (
+                    <>
+                      <FaCheck />
+                      Team ready! Redirecting...
+                    </>
+                  ) : isLogin ? (
+                    <>
+                      <FaRunning />
+                      Sign In
+                    </>
                   ) : (
                     <>
-                      {isLogin ? (
-                        <>
-                          <FaRunning className="text-lg" />
-                          Sign In
-                        </>
-                      ) : (
-                        <>
-                          <FaShieldAlt className="text-lg" />
-                          Register Team
-                        </>
-                      )}
+                      <FaShieldAlt />
+                      Register Team
                     </>
                   )}
                 </motion.button>
               </motion.div>
             </form>
 
+            {/* Footer links */}
             <div className="px-6 pb-6 text-center">
               <motion.p
                 className="text-gray-400"
@@ -226,16 +258,16 @@ const AuthPage = () => {
                 transition={{ delay: 0.6 }}
               >
                 {isLogin ? (
-                  <>New manager? <button onClick={() => setIsLogin(false)} className="text-yellow-400 hover:underline">Create your team</button></>
+                  <>New manager? <button onClick={() => switchMode(false)} className="text-yellow-400 hover:underline">Create your team</button></>
                 ) : (
-                  <>Already have a team? <button onClick={() => setIsLogin(true)} className="text-green-400 hover:underline">Sign in</button></>
+                  <>Already have a team? <button onClick={() => switchMode(true)} className="text-green-400 hover:underline">Sign in</button></>
                 )}
               </motion.p>
             </div>
           </motion.div>
         </motion.div>
 
-        {/* Footer */}
+        {/* Page footer */}
         <motion.div
           className="mt-8 text-center text-gray-500 text-sm"
           initial={{ opacity: 0 }}

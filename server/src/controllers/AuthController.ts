@@ -24,7 +24,7 @@ export const unifiedAuth = async (req: Request, res: Response) => {
             const accessToken = jwt.sign(
                 { userId: existingUser._id, email: existingUser.email },
                 process.env.JWT_SECRET as string,
-                { expiresIn: "15m" }
+                { expiresIn: "7d" }
             )
 
 
@@ -34,6 +34,12 @@ export const unifiedAuth = async (req: Request, res: Response) => {
                 { expiresIn: "7d" }
             )
 
+            res.cookie('accessToken', accessToken, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: 'strict' as const,
+                maxAge: 7 * 24 * 60 * 60 * 1000,
+            })
             res.cookie('refreshToken', refreshToken, {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === 'production',
@@ -72,7 +78,7 @@ export const unifiedAuth = async (req: Request, res: Response) => {
             const accessToken = jwt.sign(
                 { userId: newUser._id, email: newUser.email },
                 process.env.JWT_SECRET as string,
-                { expiresIn: "15m" }
+                { expiresIn: "7d" }
             )
 
 
@@ -82,6 +88,12 @@ export const unifiedAuth = async (req: Request, res: Response) => {
                 { expiresIn: "7d" }
             )
 
+            res.cookie('accessToken', accessToken, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: 'strict' as const,
+                maxAge: 7 * 24 * 60 * 60 * 1000,
+            })
             res.cookie('refreshToken', refreshToken, {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === 'production',
@@ -109,49 +121,43 @@ export const unifiedAuth = async (req: Request, res: Response) => {
 
 export const refreshToken = async (req: Request, res: Response) => {
     try {
-        const refreshToken = req.cookies?.refreshToken || req.body?.refreshToken
+        const refreshToken = req.cookies?.refreshToken;
         if (!refreshToken) {
-            res.status(401).json({ message: "Refresh token required" })
-            return;
+            return res.status(401).json({ message: "Refresh token required" });
         }
 
-        const decode = jwt.verify(refreshToken, process.env.JWT_SECRET as string) as { userId: string; tokenVersion: number }
-        const user = await User.findById(decode.userId);
-        if (!user || user.tokenVersion !== decode.tokenVersion) {
-            res.status(401).json({ message: "Invalid refresh token" });
-            return;
+        // Fix: Use JWT_REFRESH_SECRET instead of JWT_SECRET
+        const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET as string) as { 
+            userId: string; 
+            tokenVersion: number 
+        };
+
+        const user = await User.findById(decoded.userId);
+        if (!user || user.tokenVersion !== decoded.tokenVersion) {
+            return res.status(401).json({ message: "Invalid refresh token" });
         }
+
         const newAccessToken = jwt.sign(
             { userId: user._id, email: user.email },
             process.env.JWT_SECRET as string,
             { expiresIn: '15m' }
-        )
+        );
 
-        res.cookie('accessToken', newAccessToken, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict' as const,
-            maxAge: 7 * 24 * 60 * 60 * 1000,
-        });
-
-
-        res.status(200).json({
+        return res.status(200).json({
             accessToken: newAccessToken
         });
     } catch (error) {
         console.error("Refresh token error:", error);
 
         if (error instanceof jwt.TokenExpiredError) {
-            res.status(401).json({ message: "Refresh token expired" });
-            return
+            return res.status(401).json({ message: "Refresh token expired" });
         }
 
         if (error instanceof jwt.JsonWebTokenError) {
-            res.status(401).json({ message: "Invalid refresh token" });
-            return
+            return res.status(401).json({ message: "Invalid refresh token" });
         }
 
-        res.status(500).json({ message: "Internal server error" });
+        return res.status(500).json({ message: "Internal server error" });
     }
 };
 

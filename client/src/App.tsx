@@ -8,7 +8,7 @@ const App = () => {
       <Toaster
         position="top-right"
         toastOptions={{
-          duration: 3000, // Default duration (3s)
+          duration: 3000,
           style: {
             background: '#363636',
             color: '#fff',

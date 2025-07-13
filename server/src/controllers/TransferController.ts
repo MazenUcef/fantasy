@@ -11,6 +11,7 @@ interface ITeam {
     name: string;
     players: mongoose.Types.ObjectId[];
     budget: number;
+    owner: mongoose.Types.ObjectId;
     save(options?: mongoose.SaveOptions): Promise<ITeam>;
 }
 
@@ -36,6 +37,7 @@ interface PlayerQuery {
 
 export const getTransferList = async (req: Request, res: Response) => {
     try {
+        const userId = req.user?.userId;
         const { position, minPrice, maxPrice, search, teamName } = req.query as {
             position?: string;
             minPrice?: string;
@@ -44,34 +46,51 @@ export const getTransferList = async (req: Request, res: Response) => {
             teamName?: string;
         };
 
-        const query: PlayerQuery = { isOnTransferList: true };
+        const query: any = { isOnTransferList: true };
 
+        // Position filter
         if (position) query.position = position;
-        if (search) query.name = { $regex: search, $options: "i" };
 
+        // Name search filter
+        if (search) {
+            query.name = {
+                $regex: search,
+                $options: "i"
+            };
+        }
+
+        // Price range filter
         if (minPrice || maxPrice) {
             query.transferPrice = {};
             if (minPrice) query.transferPrice.$gte = Number(minPrice);
             if (maxPrice) query.transferPrice.$lte = Number(maxPrice);
         }
 
+        // Team name filter
         if (teamName) {
             const teams = await Team.find({
                 name: { $regex: teamName, $options: 'i' }
             }).select('_id').exec();
-
             query.team = { $in: teams.map(t => t._id) };
         }
 
         const players = await Player.find(query)
-            .populate<{ team: ITeam }>({
+            .populate<{ team: ITeam & { owner: mongoose.Types.ObjectId } }>({
                 path: "team",
-                select: "name"
+                select: "name owner"
             })
             .sort({ transferPrice: 1 })
+            .lean()
             .exec();
 
-        res.json(players);
+        res.json(players.map(player => ({
+            id: player._id,
+            name: player.name,
+            position: player.position,
+            transferPrice: player.transferPrice,
+            teamName: player.team.name,
+            isOwnPlayer: userId && player.team.owner.equals(userId)
+        })));
     } catch (error: unknown) {
         console.error('Transfer list error:', error);
         const errorMessage = error instanceof Error ? error.message : 'Failed to get transfer list';
@@ -353,7 +372,7 @@ export const updateAskingPrice = async (req: Request, res: Response) => {
 export const getMyTeamPlayers = async (req: Request, res: Response) => {
     try {
         const userId = req.user?.userId;
-        
+
         // Find the user's team and populate the players
         const team = await Team.findOne({ owner: userId })
             .populate<{ players: IPlayer[] }>('players')
@@ -385,7 +404,7 @@ export const getMyTeamPlayers = async (req: Request, res: Response) => {
 export const getMyTeamPlayersForSale = async (req: Request, res: Response) => {
     try {
         const userId = req.user?.userId;
-        
+
         // Find the user's team and get only players listed for transfer
         const players = await Player.find({
             team: await Team.findOne({ owner: userId }).select('_id').exec(),
