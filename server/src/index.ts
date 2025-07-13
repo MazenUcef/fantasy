@@ -8,7 +8,7 @@ import connectDB from './config/database';
 import job from './config/cron';
 import { limiter } from './config/ratelimit';
 import authRoutes from './routes/AuthRoutes'
-import transferRoutes from './routes/TranserRoutes'
+import transferRoutes from './routes/TransferRoutes'
 import teamRoutes from './routes/TeamRoutes'
 import startTeamWorker from './utils/StartWork';
 import { createServer } from 'http';
@@ -75,8 +75,6 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
-// Handle preflight requests
-app.options('*', cors(corsOptions));
 
 
 // Health Check
