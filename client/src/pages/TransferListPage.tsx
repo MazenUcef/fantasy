@@ -171,7 +171,7 @@ const TransferListPage = () => {
                         transition={{ duration: 0.3 }}
                     >
                         <div className='h-40 w-40 rounded-full bg-gray-800/50 mb-4 flex items-center justify-center'>
-                            <FaUser size={25}/>
+                            <FaUser size={55}/>
                         </div>
                         <h3 className='font-bold text-[#83d007] text-xl text-center'>{player.name}</h3>
                         <p className='text-sm text-white font-semibold'>{player.position}</p>

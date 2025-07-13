@@ -5,6 +5,7 @@ import Home from "../pages/Home";
 import { useSelector } from "react-redux";
 import type { RootState } from "../store";
 import AuthPage from "../pages/Register";
+import TeamCreationLoader from "../components/TeamCreationLoader";
 
 const AppRoutes = () => {
     const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
@@ -14,17 +15,27 @@ const AppRoutes = () => {
             <Routes>
                 <Route path="/" element={<RootLayout />}>
                     <Route index element={
-                        isAuthenticated ? (user?.hasTeam ? <Home /> : <Navigate to="/team-creation" replace />)
+                        isAuthenticated ? (user?.hasTeam ? <Home /> : <Navigate to="/team-creating" replace />)
                             : <Navigate to="/auth" replace />
                     } />
 
                     <Route path="/home" element={
-                        isAuthenticated ? (user?.hasTeam ? <Home /> : <Navigate to="/team-creation" replace />)
+                        isAuthenticated ? (user?.hasTeam ? <Home /> : <Navigate to="/team-creating" replace />)
                             : <Navigate to="/auth" replace />
                     } />
 
                     <Route path="/auth" element={
                         !isAuthenticated ? <AuthPage /> : <Navigate to={user?.hasTeam ? "/home" : "/team-creation"} replace />
+                    } />
+
+
+                    {/* Team Creation Loader */}
+                    <Route path="/team-creating" element={
+                        isAuthenticated ? (
+                            user?.hasTeam ? <Navigate to="/home" replace /> : <TeamCreationLoader />
+                        ) : (
+                            <Navigate to="/auth" replace />
+                        )
                     } />
 
                     <Route path="*" element={<Navigate to={isAuthenticated ? (user?.hasTeam ? "/home" : "/team-creation") : "/auth"} replace />} />
