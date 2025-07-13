@@ -1,13 +1,13 @@
 import { motion } from 'framer-motion';
 import { useEffect, useState, useCallback } from 'react';
 import { usePlayerPurchase, useTransferList } from '../api/TransferApi';
-import playerImage from '@/assets/images/player.png';
 import { useTeamPlayers } from '../api/TeamApi';
 import { debounce } from 'lodash';
 import toast from 'react-hot-toast';
 import { invalidateTeamCache } from '../redux/teamSlice';
 import type { AppDispatch } from '../store';
 import { useDispatch } from 'react-redux';
+import { FaUser } from 'react-icons/fa';
 
 const TransferListPage = () => {
     const {
@@ -171,11 +171,7 @@ const TransferListPage = () => {
                         transition={{ duration: 0.3 }}
                     >
                         <div className='h-40 w-40 rounded-full bg-gray-800/50 mb-4 flex items-center justify-center'>
-                            <img
-                                src={playerImage}
-                                alt={`${player.name} avatar`}
-                                className='h-32 w-32 object-contain'
-                            />
+                            <FaUser size={25}/>
                         </div>
                         <h3 className='font-bold text-[#83d007] text-xl text-center'>{player.name}</h3>
                         <p className='text-sm text-white font-semibold'>{player.position}</p>

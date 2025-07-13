@@ -1,11 +1,11 @@
 import { motion } from 'framer-motion'
 import { useTeamPlayers } from '../api/TeamApi';
 import { useEffect, useState } from 'react';
-import playerImage from '@/assets/images/player.png';
 import { usePlayerListing, usePriceUpdate } from '../api/TransferApi';
 import { invalidateTeamCache } from '../redux/teamSlice';
 import { useDispatch } from 'react-redux';
 import type { AppDispatch } from '../store';
+import { FaUser } from 'react-icons/fa';
 
 const TeamPlayers = () => {
     const { teamData, loading, error, fetchTeamPlayers } = useTeamPlayers();
@@ -66,7 +66,7 @@ const TeamPlayers = () => {
             fetchTeamPlayers();
         } catch (error) {
             console.error('Failed to unlist player:', error);
-            
+
         }
     };
 
@@ -131,11 +131,7 @@ const TeamPlayers = () => {
                         whileHover={{ y: -5, boxShadow: '0 10px 20px rgba(0,0,0,0.1)' }}
                     >
                         <div className='h-40 mt-4 rounded mb-14 flex items-center justify-center'>
-                            <img
-                                src={playerImage}
-                                alt='Player Avatar'
-                                className='h-[10rem]'
-                            />
+                            <FaUser size={25}/>
                         </div>
                         <h3 className='font-bold text-[#83d007] text-2xl'>{player.name}</h3>
                         <p className='text-sm text-white font-semibold'>{player.position}</p>
