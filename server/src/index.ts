@@ -26,15 +26,15 @@ if (!process.env.PORT) {
     throw new Error('PORT environment variable is not defined');
 };
 
-const allowedOrigins = [
-    'http://localhost:5173',
-    'http://localhost:5000',
-].filter(Boolean);
+// const allowedOrigins = [
+//     'http://localhost:5173',
+//     'http://localhost:5000',
+// ].filter(Boolean);
 
 // Socket.IO connection handler
 const io = new Server(httpserver, {
     cors: {
-        origin: allowedOrigins,
+        origin: "https://fantasy-1-77hv.onrender.com",
         methods: ["GET", "POST"]
     }
 })
@@ -67,7 +67,7 @@ app.use(helmet());
 
 // CORS configuration
 app.use(cors({
-    origin: allowedOrigins[0],
+    origin: "https://fantasy-1-77hv.onrender.com",
     credentials: true
 }));
 
