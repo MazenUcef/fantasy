@@ -10,7 +10,6 @@ import authRoutes from './routes/AuthRoutes'
 import transferRoutes from './routes/TransferRoutes'
 import teamRoutes from './routes/TeamRoutes'
 import startTeamWorker from './utils/StartWork';
-import { createServer } from 'http';
 
 
 const app: Application = express();
@@ -25,9 +24,6 @@ if (!process.env.PORT) {
     throw new Error('PORT environment variable is not defined');
 };
 
-
-
-// Cron job
 
 // Middlewares
 app.use(express.json());

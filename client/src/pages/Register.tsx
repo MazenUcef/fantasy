@@ -4,6 +4,8 @@ import { FaUser, FaLock, FaFutbol, FaRunning, FaShieldAlt, FaCheck, FaSpinner } 
 import { motion } from 'framer-motion';
 import { useUnifiedAuth } from '../api/AuthApi';
 import { useNavigate } from 'react-router';
+import type { RootState } from '../store';
+import { useSelector } from 'react-redux';
 
 type AuthFormData = {
   email: string;
@@ -24,7 +26,7 @@ const AuthPage = () => {
       password: '',
     }
   });
-
+  const { isAuthenticated } = useSelector((state: RootState) => state.auth);
   const navigate = useNavigate()
 
   const {
@@ -40,10 +42,15 @@ const AuthPage = () => {
 
 
   useEffect(() => {
-    if (user && (isLogin || teamCreationStatus === 'completed') && user.hasTeam) {
-      navigate('/home');
+    if (isAuthenticated) {
+      if (user?.hasTeam) {
+        navigate('/home');
+      } else if (teamCreationStatus === 'completed') {
+        // This assumes you have a team creation flow
+        navigate('/home');
+      }
     }
-  }, [user, isLogin, teamCreationStatus, navigate, user?.hasTeam]);
+  }, [isAuthenticated, user, teamCreationStatus, navigate]);
 
   const onSubmit = async (data: AuthFormData) => {
     setIsSubmitting(true);
