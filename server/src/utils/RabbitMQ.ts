@@ -3,6 +3,14 @@ import config from '../config/config';
 
 type MessageContent = Record<string, unknown> | unknown[];
 
+let channel: Channel | null = null;
+
+const getChannel = async (): Promise<Channel> => {
+    if (channel) return channel;
+    channel = await connect();
+    return channel;
+};
+
 const connect = async (): Promise<Channel> => {
     try {
         console.log('[RabbitMQ] Connecting...');
@@ -30,7 +38,7 @@ const connect = async (): Promise<Channel> => {
 
 const publish = async <T extends MessageContent>(queue: string, message: T): Promise<boolean> => {
     try {
-        const ch: Channel = await connect();
+        const ch = await getChannel();
         await ch.assertQueue(queue, { durable: true });
         const payload: string = JSON.stringify(message);
         const success = ch.sendToQueue(queue, Buffer.from(payload), { persistent: true });

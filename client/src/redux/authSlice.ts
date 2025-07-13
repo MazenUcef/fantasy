@@ -34,7 +34,10 @@ export const unifiedAuth = createAsyncThunk(
     'auth/unified',
     async (userData: UserCredentials, { rejectWithValue }) => {
         try {
-            const res = await api.post(`${import.meta.env.VITE_API_BASE_URL}api/auth/unifiedAuth`, { userData });
+            const res = await api.post(`${import.meta.env.VITE_API_BASE_URL}api/auth/unifiedAuth`, {
+                email: userData.email,
+                password: userData.password
+            });
             console.log("unifiedAuth", res);
             return res.data;
         } catch (error: any) {

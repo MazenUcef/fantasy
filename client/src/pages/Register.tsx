@@ -8,7 +8,6 @@ import { useUnifiedAuth } from '../api/AuthApi';
 type AuthFormData = {
   email: string;
   password: string;
-  rememberMe: boolean;
 };
 
 const floatingBalls = [
@@ -23,13 +22,14 @@ const AuthPage = () => {
     defaultValues: {
       email: '',
       password: '',
-      rememberMe: false
     }
   });
-  const { Register,authStatus } = useUnifiedAuth()
+  const { Register, authStatus } = useUnifiedAuth()
   const [isLogin, setIsLogin] = useState(true);
 
   const onSubmit = async (data: AuthFormData) => {
+    console.log("Form submitted with data:", data);
+    
     try {
       await Register(data)
       toast.success(isLogin ? 'Welcome back!' : 'Account created successfully!');
@@ -178,34 +178,6 @@ const AuthPage = () => {
                   <p className="text-red-400 text-sm mt-1">{errors.password.message}</p>
                 )}
               </motion.div>
-
-              {!isLogin && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.4 }}
-                  className="flex items-center"
-                >
-                  <Controller
-                    name="rememberMe"
-                    control={control}
-                    render={({ field }) => (
-                      <label className="flex items-center text-gray-300">
-                        <input
-                          type="checkbox"
-                          className="rounded border-gray-600 bg-gray-700 text-yellow-500 focus:ring-yellow-500"
-                          checked={field.value}
-                          onChange={field.onChange}
-                          onBlur={field.onBlur}
-                          name={field.name}
-                          ref={field.ref}
-                        />
-                        <span className="ml-2">Remember me</span>
-                      </label>
-                    )}
-                  />
-                </motion.div>
-              )}
 
               <motion.div
                 initial={{ opacity: 0 }}

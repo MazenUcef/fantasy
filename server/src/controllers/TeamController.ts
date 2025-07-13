@@ -70,6 +70,11 @@ export const createTeamForUser = async (userId: string) => {
     session.startTransaction();
 
     try {
+        const user = await User.findById(userId);
+        if (user?.team) {
+            console.log(`User ${user.email} already has a team, skipping`);
+            return;
+        }
 
         const team = await Team.create([{
             owner: userId,
