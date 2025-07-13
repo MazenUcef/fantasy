@@ -25,7 +25,7 @@ const AppRoutes = () => {
                     } />
 
                     <Route path="/auth" element={
-                        !isAuthenticated ? <AuthPage /> : <Navigate to={user?.hasTeam ? "/home" : "/team-creation"} replace />
+                        !isAuthenticated ? <AuthPage /> : <Navigate to={user?.hasTeam ? "/home" : "/team-creating"} replace />
                     } />
 
 
@@ -38,7 +38,7 @@ const AppRoutes = () => {
                         )
                     } />
 
-                    <Route path="*" element={<Navigate to={isAuthenticated ? (user?.hasTeam ? "/home" : "/team-creation") : "/auth"} replace />} />
+                    {/* <Route path="*" element={<Navigate to={isAuthenticated ? (user?.hasTeam ? "/home" : "/team-creation") : "/auth"} replace />} /> */}
                 </Route>
             </Routes>
         </BrowserRouter>
