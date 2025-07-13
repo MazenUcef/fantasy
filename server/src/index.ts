@@ -65,11 +65,18 @@ app.use(cookieParser());
 app.use(morgan("dev"));
 app.use(helmet());
 
-// CORS configuration
-app.use(cors({
+// Replace your current CORS config with this:
+const corsOptions = {
     origin: "https://fantasy-1-77hv.onrender.com",
-    credentials: true
-}));
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+};
+
+app.use(cors(corsOptions));
+
+// Handle preflight requests
+app.options('*', cors(corsOptions));
 
 
 // Health Check
