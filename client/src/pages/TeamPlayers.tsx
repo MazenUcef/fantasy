@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion'
 import { useTeamPlayers } from '../api/TeamApi';
 import { useEffect, useState } from 'react';
-import playerImage from '../assets/images/player.png';
+import playerImage from '@/assets/images/player.png';
 import { usePlayerListing, usePriceUpdate } from '../api/TransferApi';
 import { invalidateTeamCache } from '../redux/teamSlice';
 import { useDispatch } from 'react-redux';

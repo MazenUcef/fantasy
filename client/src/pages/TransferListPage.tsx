@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { useEffect, useState, useCallback } from 'react';
 import { usePlayerPurchase, useTransferList } from '../api/TransferApi';
-import playerImage from '../assets/images/player.png';
+import playerImage from '@/assets/images/player.png';
 import { useTeamPlayers } from '../api/TeamApi';
 import { debounce } from 'lodash';
 import toast from 'react-hot-toast';
