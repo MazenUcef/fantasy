@@ -125,12 +125,12 @@ const Home = () => {
             </AnimatePresence>
 
             {/* Main Layout */}
-            <div className="flex flex-col md:flex-row w-full min-h-screen">
+            <div className="flex flex-col md:flex-row w-full min-h-screen gap-4 sm:gap-6">
                 {/* Sidebar */}
                 <motion.div
-                    className="fixed top-0 left-0 w-full md:w-64 lg:w-80 h-auto md:h-screen bg-[#ecf5b7] p-4 sm:p-6 flex-shrink-0 z-10 md:overflow-y-auto"
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
+                    className="w-full md:w-64 lg:w-80 bg-[#ecf5b7] p-4 sm:p-6 flex-shrink-0 md:sticky md:top-0 md:h-screen md:overflow-y-auto"
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5 }}
                 >
                     <div className="w-full h-full bg-[#83d007] rounded-xl p-4 sm:p-6 flex flex-col">
@@ -201,7 +201,7 @@ const Home = () => {
                         backgroundPosition: 'center',
                         backgroundAttachment: 'fixed',
                     }}
-                    className="flex-grow md:ml-0 md:pl-[calc(16rem+1.5rem)] lg:pl-[calc(20rem+1.5rem)] rounded-2xl p-4 sm:p-6 md:p-8 relative overflow-auto min-h-screen"
+                    className="flex-grow rounded-2xl p-4 sm:p-6 md:p-8 relative overflow-auto min-h-screen"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.2, duration: 0.5 }}
