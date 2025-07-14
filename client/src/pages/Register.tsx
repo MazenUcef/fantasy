@@ -92,7 +92,7 @@ const AuthPage = () => {
           >
             <div className="flex items-center justify-center mb-4">
               <FaFutbol className="text-4xl text-yellow-400 mr-2" />
-              <h1 className="text-4xl font-bold bg.perform-text text-transparent bg-gradient-to-r from-yellow-400 to-green-400">
+              <h1 className="text-4xl font-bold text-white">
                 Fantasy Team Manager
               </h1>
             </div>

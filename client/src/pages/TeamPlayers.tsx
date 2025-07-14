@@ -106,13 +106,13 @@ const TeamPlayers = () => {
                                     setIsModalOpen(false);
                                     setPrice('');
                                 }}
-                                className="px-4 py-2 rounded bg-gray-600 text-white"
+                                className="px-4 py-2 rounded cursor-pointer bg-gray-600 text-white"
                             >
                                 Cancel
                             </button>
                             <button
                                 onClick={handleConfirmAction}
-                                className="px-4 py-2 rounded bg-[#83d007] text-black font-semibold"
+                                className="px-4 py-2 rounded bg-[#83d007] text-black  cursor-pointer font-semibold"
                                 disabled={!price}
                             >
                                 {modalType === 'list' ? 'List Player' : 'Update Price'}
@@ -131,7 +131,7 @@ const TeamPlayers = () => {
                         whileHover={{ y: -5, boxShadow: '0 10px 20px rgba(0,0,0,0.1)' }}
                     >
                         <div className='h-40 mt-4 rounded mb-14 flex items-center justify-center'>
-                            <FaUser size={55}/>
+                            <FaUser color='white' size={55}/>
                         </div>
                         <h3 className='font-bold text-[#83d007] text-2xl'>{player.name}</h3>
                         <p className='text-sm text-white font-semibold'>{player.position}</p>

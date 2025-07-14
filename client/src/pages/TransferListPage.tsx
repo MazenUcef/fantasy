@@ -152,7 +152,7 @@ const TransferListPage = () => {
                 <div className="flex items-end">
                     <button
                         onClick={handleResetFilters}
-                        className="w-full md:w-auto px-4 py-2 rounded bg-[#f12274] hover:bg-[#e01a6a] text-white font-semibold transition"
+                        className="w-full md:w-auto px-4 py-2 rounded bg-[#f12274] cursor-pointer hover:bg-[#e01a6a] text-white font-semibold transition"
                     >
                         Reset Filters
                     </button>
@@ -171,7 +171,7 @@ const TransferListPage = () => {
                         transition={{ duration: 0.3 }}
                     >
                         <div className='h-40 w-40 rounded-full bg-gray-800/50 mb-4 flex items-center justify-center'>
-                            <FaUser size={55}/>
+                            <FaUser color='white' size={55}/>
                         </div>
                         <h3 className='font-bold text-[#83d007] text-xl text-center'>{player.name}</h3>
                         <p className='text-sm text-white font-semibold'>{player.position}</p>
@@ -181,7 +181,7 @@ const TransferListPage = () => {
                         </p>
                         {!player.isOwnPlayer && (
                             <button
-                                className="bg-[#83d007] hover:bg-[#72b806] mt-4 rounded-full px-6 py-2 text-sm font-semibold text-black transition"
+                                className="bg-[#83d007] hover:bg-[#72b806] cursor-pointer mt-4 rounded-full px-6 py-2 text-sm font-semibold text-black transition"
                                 onClick={() => handleBuyPlayer(player.id)}
                             >
                                 Buy Player
@@ -198,7 +198,7 @@ const TransferListPage = () => {
                     <p className="text-gray-400 mb-4">Try adjusting your filters</p>
                     <button
                         onClick={handleResetFilters}
-                        className="px-4 py-2 rounded bg-[#83d007] hover:bg-[#72b806] text-black font-semibold transition"
+                        className="px-4 py-2 rounded cursor-pointer bg-[#83d007] hover:bg-[#72b806] text-black font-semibold transition"
                     >
                         Reset Filters
                     </button>
