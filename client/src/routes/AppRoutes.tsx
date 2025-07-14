@@ -1,11 +1,10 @@
-// AppRoutes.tsx
 import { BrowserRouter, Navigate, Route, Routes } from "react-router";
 import RootLayout from "../layout/RootLayout";
 import Home from "../pages/Home";
 import { useSelector } from "react-redux";
 import type { RootState } from "../store";
 import AuthPage from "../pages/Register";
-import TeamCreationLoader from "../components/TeamCreationLoader";
+
 
 const AppRoutes = () => {
     const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
@@ -14,31 +13,46 @@ const AppRoutes = () => {
         <BrowserRouter>
             <Routes>
                 <Route path="/" element={<RootLayout />}>
-                    <Route index element={
-                        isAuthenticated ? (user?.hasTeam ? <Home /> : <Navigate to="/team-creating" replace />)
-                            : <Navigate to="/auth" replace />
-                    } />
-
-                    <Route path="/home" element={
-                        isAuthenticated ? (user?.hasTeam ? <Home /> : <Navigate to="/team-creating" replace />)
-                            : <Navigate to="/auth" replace />
-                    } />
-
-                    <Route path="/auth" element={
-                        !isAuthenticated ? <AuthPage /> : <Navigate to={user?.hasTeam ? "/home" : "/team-creating"} replace />
-                    } />
-
-
-                    {/* Team Creation Loader */}
-                    <Route path="/team-creating" element={
-                        isAuthenticated ? (
-                            user?.hasTeam ? <Navigate to="/home" replace /> : <TeamCreationLoader />
-                        ) : (
-                            <Navigate to="/auth" replace />
-                        )
-                    } />
-
-                    {/* <Route path="*" element={<Navigate to={isAuthenticated ? (user?.hasTeam ? "/home" : "/team-creation") : "/auth"} replace />} /> */}
+                    <Route
+                        index
+                        element={
+                            isAuthenticated && user?.hasTeam ? (
+                                <Home />
+                            ) : (
+                                <Navigate to="/auth" replace />
+                            )
+                        }
+                    />
+                    <Route
+                        path="/home"
+                        element={
+                            isAuthenticated && user?.hasTeam ? (
+                                <Home />
+                            ) : (
+                                <Navigate to="/auth" replace />
+                            )
+                        }
+                    />
+                    <Route
+                        path="/auth"
+                        element={
+                            !isAuthenticated ? (
+                                <AuthPage />
+                            ) : (
+                                <Navigate to={user?.hasTeam ? "/home" : "/auth"} replace />
+                            )
+                        }
+                    />
+                    {/* Catch-all route */}
+                    <Route
+                        path="*"
+                        element={
+                            <Navigate
+                                to={isAuthenticated && user?.hasTeam ? "/home" : "/auth"}
+                                replace
+                            />
+                        }
+                    />
                 </Route>
             </Routes>
         </BrowserRouter>

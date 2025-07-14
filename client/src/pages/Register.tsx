@@ -1,11 +1,12 @@
-import { useEffect, useState } from 'react';
-import { useForm, Controller } from 'react-hook-form';
-import { FaUser, FaLock, FaFutbol, FaRunning, FaShieldAlt, FaCheck, FaSpinner } from 'react-icons/fa';
-import { motion } from 'framer-motion';
-import { useUnifiedAuth } from '../api/AuthApi';
-import { useNavigate } from 'react-router';
-import type { RootState } from '../store';
-import { useSelector } from 'react-redux';
+import { useEffect, useState } from "react";
+import { useForm, Controller } from "react-hook-form";
+import { FaUser, FaLock, FaFutbol, FaRunning, FaShieldAlt, FaCheck, FaSpinner } from "react-icons/fa";
+import { motion } from "framer-motion";
+import { useUnifiedAuth } from "../api/AuthApi";
+import { useNavigate } from "react-router";
+import type { RootState } from "../store";
+import { useSelector } from "react-redux";
+import toast from "react-hot-toast";
 
 type AuthFormData = {
   email: string;
@@ -13,44 +14,32 @@ type AuthFormData = {
 };
 
 const floatingBalls = [
-  { id: 1, color: 'bg-blue-500', size: 'w-4 h-4', position: 'top-1/4 left-1/4' },
-  { id: 2, color: 'bg-green-500', size: 'w-6 h-6', position: 'top-1/3 right-1/5' },
-  { id: 3, color: 'bg-yellow-500', size: 'w-5 h-5', position: 'bottom-1/4 left-1/3' },
-  { id: 4, color: 'bg-red-500', size: 'w-7 h-7', position: 'bottom-1/3 right-1/4' },
+  { id: 1, color: "bg-blue-500", size: "w-4 h-4", position: "top-1/4 left-1/4" },
+  { id: 2, color: "bg-green-500", size: "w-6 h-6", position: "top-1/3 right-1/5" },
+  { id: 3, color: "bg-yellow-500", size: "w-5 h-5", position: "bottom-1/4 left-1/3" },
+  { id: 4, color: "bg-red-500", size: "w-7 h-7", position: "bottom-1/3 right-1/4" },
 ];
 
 const AuthPage = () => {
   const { control, handleSubmit, formState: { errors }, reset } = useForm<AuthFormData>({
     defaultValues: {
-      email: '',
-      password: '',
-    }
+      email: "",
+      password: "",
+    },
   });
   const { isAuthenticated } = useSelector((state: RootState) => state.auth);
-  const navigate = useNavigate()
-
-  const {
-    Register,
-    teamCreationStatus,
-    user
-  } = useUnifiedAuth();
-
+  const navigate = useNavigate();
+  const { Register, teamCreationStatus, user } = useUnifiedAuth();
   const [isLogin, setIsLogin] = useState(true);
-
-
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-
+  // Navigate only when authenticated and team creation is complete
   useEffect(() => {
-    if (isAuthenticated) {
-      if (user?.hasTeam) {
-        navigate('/home');
-      } else if (teamCreationStatus === 'completed') {
-        // This assumes you have a team creation flow
-        navigate('/home');
-      }
+    if (isAuthenticated && teamCreationStatus === "completed" && user?.hasTeam) {
+      toast.success("Authentication successful!");
+      navigate("/home");
     }
-  }, [isAuthenticated, user, teamCreationStatus, navigate]);
+  }, [isAuthenticated, teamCreationStatus, user, navigate]);
 
   const onSubmit = async (data: AuthFormData) => {
     setIsSubmitting(true);
@@ -58,6 +47,7 @@ const AuthPage = () => {
       await Register(data);
     } catch (error) {
       setIsSubmitting(false);
+      toast.error(typeof error === "string" ? error : "Authentication failed");
     }
   };
 
@@ -76,12 +66,12 @@ const AuthPage = () => {
           animate={{
             y: [0, -20, 0],
             x: [0, 15, 0],
-            rotate: [0, 180, 360]
+            rotate: [0, 180, 360],
           }}
           transition={{
             duration: 5 + Math.random() * 5,
             repeat: Infinity,
-            ease: "easeInOut"
+            ease: "easeInOut",
           }}
         />
       ))}
@@ -99,16 +89,15 @@ const AuthPage = () => {
             className="text-center mb-8"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.3, duration: 0.8 }}
           >
             <div className="flex items-center justify-center mb-4">
               <FaFutbol className="text-4xl text-yellow-400 mr-2" />
-              <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 to-green-400">
+              <h1 className="text-4xl font-bold bg.perform-text text-transparent bg-gradient-to-r from-yellow-400 to-green-400">
                 Fantasy Team Manager
               </h1>
             </div>
             <p className="text-gray-300">
-              {isLogin ? 'Sign in to manage your dream team' : 'Join to create your ultimate squad'}
+              {isLogin ? "Sign in to manage your dream team" : "Join to create your ultimate squad"}
             </p>
           </motion.div>
 
@@ -117,18 +106,22 @@ const AuthPage = () => {
             className="bg-gray-800 bg-opacity-70 backdrop-blur-sm rounded-xl shadow-2xl overflow-hidden border border-gray-700"
             initial={{ scale: 0.95 }}
             animate={{ scale: 1 }}
-            transition={{ type: 'spring', stiffness: 100 }}
+            transition={{ type: "spring", stiffness: 100 }}
           >
             {/* Tabs */}
             <div className="flex border-b border-gray-700">
               <button
-                className={`flex-1 py-4 font-medium ${isLogin ? 'text-yellow-400  border-b-2 border-yellow-400' : 'text-gray-400'} cursor-pointer`}
+                className={`flex-1 py-4 font-medium ${
+                  isLogin ? "text-yellow-400 border-b-2 border-yellow-400" : "text-gray-400"
+                } cursor-pointer`}
                 onClick={() => switchMode(true)}
               >
                 Sign In
               </button>
               <button
-                className={`flex-1 py-4 font-medium ${!isLogin ? 'text-green-400 border-b-2 border-green-400' : 'text-gray-400'} cursor-pointer`}
+                className={`flex-1 py-4 font-medium ${
+                  !isLogin ? "text-green-400 border-b-2 border-green-400" : "text-gray-400"
+                } cursor-pointer`}
                 onClick={() => switchMode(false)}
               >
                 Register
@@ -148,11 +141,11 @@ const AuthPage = () => {
                   name="email"
                   control={control}
                   rules={{
-                    required: 'Email is required',
+                    required: "Email is required",
                     pattern: {
                       value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                      message: 'Invalid email address'
-                    }
+                      message: "Invalid email address",
+                    },
                   }}
                   render={({ field }) => (
                     <div className="relative">
@@ -164,7 +157,7 @@ const AuthPage = () => {
                         type="email"
                         className="w-full pl-10 pr-3 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-white placeholder-gray-400"
                         placeholder="player@fantasyteam.com"
-                        disabled={teamCreationStatus === 'in-progress' || teamCreationStatus === 'checking'}
+                        disabled={isSubmitting || teamCreationStatus === "in-progress" || teamCreationStatus === "checking"}
                       />
                     </div>
                   )}
@@ -185,11 +178,11 @@ const AuthPage = () => {
                   name="password"
                   control={control}
                   rules={{
-                    required: 'Password is required',
+                    required: "Password is required",
                     minLength: {
                       value: 6,
-                      message: 'Password must be at least 6 characters'
-                    }
+                      message: "Password must be at least 6 characters",
+                    },
                   }}
                   render={({ field }) => (
                     <div className="relative">
@@ -201,7 +194,7 @@ const AuthPage = () => {
                         type="password"
                         className="w-full pl-10 pr-3 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-white placeholder-gray-400"
                         placeholder="••••••••"
-                        disabled={teamCreationStatus === 'in-progress' || teamCreationStatus === 'checking'}
+                        disabled={isSubmitting || teamCreationStatus === "in-progress" || teamCreationStatus === "checking"}
                       />
                     </div>
                   )}
@@ -219,24 +212,29 @@ const AuthPage = () => {
               >
                 <motion.button
                   type="submit"
-                  className={`w-full py-3 px-4 ${teamCreationStatus === 'in-progress' ? 'bg-blue-600' :
-                    teamCreationStatus === 'completed' ? 'bg-green-600' :
-                      'bg-gradient-to-r from-yellow-500 to-green-500'
-                    } text-white font-bold rounded-lg flex items-center justify-center gap-2`}
-                  disabled={isSubmitting}
+                  className={`w-full py-3 px-4 ${
+                    teamCreationStatus === "in-progress" || teamCreationStatus === "checking"
+                      ? "bg-blue-600"
+                      : teamCreationStatus === "completed"
+                      ? "bg-green-600"
+                      : "bg-gradient-to-r from-yellow-500 to-green-500"
+                  } text-white font-bold rounded-lg flex items-center justify-center gap-2`}
+                  disabled={isSubmitting || teamCreationStatus === "in-progress" || teamCreationStatus === "checking"}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                 >
-                  {isSubmitting || teamCreationStatus === 'in-progress' ? (
+                  {(isSubmitting || teamCreationStatus === "in-progress" || teamCreationStatus === "checking") ? (
                     <>
                       <FaSpinner className="animate-spin" />
-                      {teamCreationStatus === 'in-progress' ? (
-                        'Creating your team...'
+                      {teamCreationStatus === "in-progress" || teamCreationStatus === "checking" ? (
+                        "Creating your team..."
                       ) : isLogin ? (
-                        'Signing in...'
+                        "Signing in..."
                       ) : (
-                        'Creating account...'
+                        "Creating account..."
                       )}
                     </>
-                  ) : teamCreationStatus === 'completed' ? (
+                  ) : teamCreationStatus === "completed" ? (
                     <>
                       <FaCheck />
                       Team ready! Redirecting...
@@ -265,9 +263,19 @@ const AuthPage = () => {
                 transition={{ delay: 0.6 }}
               >
                 {isLogin ? (
-                  <>New manager? <button onClick={() => switchMode(false)} className="text-yellow-400 hover:underline">Create your team</button></>
+                  <>
+                    New manager?{" "}
+                    <button onClick={() => switchMode(false)} className="text-yellow-400 hover:underline">
+                      Create your team
+                    </button>
+                  </>
                 ) : (
-                  <>Already have a team? <button onClick={() => switchMode(true)} className="text-green-400 hover:underline">Sign in</button></>
+                  <>
+                    Already have a team?{" "}
+                    <button onClick={() => switchMode(true)} className="text-green-400 hover:underline">
+                      Sign in
+                    </button>
+                  </>
                 )}
               </motion.p>
             </div>
