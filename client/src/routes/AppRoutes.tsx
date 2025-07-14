@@ -7,7 +7,7 @@ import AuthPage from "../pages/Register";
 
 
 const AppRoutes = () => {
-    const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
+    const { user } = useSelector((state: RootState) => state.auth);
 
     return (
         <BrowserRouter>
@@ -16,7 +16,7 @@ const AppRoutes = () => {
                     <Route
                         index
                         element={
-                            isAuthenticated && user?.hasTeam ? (
+                            user?.hasTeam ? (
                                 <Home />
                             ) : (
                                 <Navigate to="/auth" replace />
@@ -26,7 +26,7 @@ const AppRoutes = () => {
                     <Route
                         path="/home"
                         element={
-                            isAuthenticated && user?.hasTeam ? (
+                            user?.hasTeam ? (
                                 <Home />
                             ) : (
                                 <Navigate to="/auth" replace />
@@ -36,7 +36,7 @@ const AppRoutes = () => {
                     <Route
                         path="/auth"
                         element={
-                            !isAuthenticated ? (
+                            !user?.hasTeam ? (
                                 <AuthPage />
                             ) : (
                                 <Navigate to={user?.hasTeam ? "/home" : "/auth"} replace />
@@ -48,7 +48,7 @@ const AppRoutes = () => {
                         path="*"
                         element={
                             <Navigate
-                                to={isAuthenticated && user?.hasTeam ? "/home" : "/auth"}
+                                to={user?.hasTeam ? "/home" : "/auth"}
                                 replace
                             />
                         }

@@ -35,7 +35,7 @@ const AuthPage = () => {
 
   // Navigate only when authenticated and team creation is complete
   useEffect(() => {
-    if (isAuthenticated && teamCreationStatus === "completed" && user?.hasTeam) {
+    if (teamCreationStatus === "completed" && user?.hasTeam) {
       toast.success("Authentication successful!");
       navigate("/home");
     }
