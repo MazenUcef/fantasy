@@ -66,7 +66,7 @@ const Home = () => {
     }, [showNameModal, signOut, dispatch]);
 
     return (
-        <div className="flex flex-col w-full min-h-screen p-4 sm:p-6 gap-4 sm:gap-6 bg-gray-900">
+        <div className="flex flex-col w-full min-h-screen bg-gray-900">
             {/* Team Name Modal */}
             <AnimatePresence>
                 {showNameModal && (
@@ -125,10 +125,10 @@ const Home = () => {
             </AnimatePresence>
 
             {/* Main Layout */}
-            <div className="flex flex-col md:flex-row w-full gap-4 sm:gap-6 flex-grow">
+            <div className="flex flex-col md:flex-row w-full min-h-screen">
                 {/* Sidebar */}
                 <motion.div
-                    className="w-full md:w-64 lg:w-80 bg-[#ecf5b7] rounded-2xl p-4 sm:p-6 flex-shrink-0"
+                    className="fixed top-0 left-0 w-full md:w-64 lg:w-80 h-auto md:h-screen bg-[#ecf5b7] p-4 sm:p-6 flex-shrink-0 z-10 md:overflow-y-auto"
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.5 }}
@@ -194,14 +194,14 @@ const Home = () => {
                 </motion.div>
 
                 {/* Main Content */}
-                38        <motion.div
+                <motion.div
                     style={{
                         backgroundImage: `url(${background})`,
                         backgroundSize: 'cover',
                         backgroundPosition: 'center',
                         backgroundAttachment: 'fixed',
                     }}
-                    className="flex-grow rounded-2xl p-4 sm:p-6 md:p-8 relative overflow-auto"
+                    className="flex-grow md:ml-0 md:pl-[calc(16rem+1.5rem)] lg:pl-[calc(20rem+1.5rem)] rounded-2xl p-4 sm:p-6 md:p-8 relative overflow-auto min-h-screen"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.2, duration: 0.5 }}
